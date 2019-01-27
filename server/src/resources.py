@@ -42,14 +42,12 @@ class ImageListResource:
      in the specified album.
     """
     album_name = req.get_param('album_name', required=True)
-
     image_bytes = b''
     while True:
       chunk = req.stream.read(_UPLOAD_CHUNK_SIZE_BYTES)
       if not chunk:
         break
       image_bytes += chunk
-
     image_metadata = self._face_index.save_and_index(
         album_name,
         image_bytes,
@@ -74,6 +72,5 @@ class ImageSearchResource:
       if not chunk:
         break
       image_bytes += chunk
-
     search_results = self._face_index.search_indexed_faces(image_bytes)
     resp.media = search_results

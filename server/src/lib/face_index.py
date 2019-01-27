@@ -18,28 +18,23 @@ class FaceIndex(object):
     """
     if not self._image_has_faces(image_bytes):
       return None
-
     image_metadata = self._storage.save(image_bytes, content_type)
     resp = self.client.index_faces(
         CollectionId=_COLLECTION_INDEX_NAME_,
         Image={'S3Object': {'Bucket': image_metadata['s3_bucket'], 'Name': image_metadata['key']}},
         ExternalImageId=image_metadata['key']
     )
-
     ret_value = {
         'image_url': image_metadata['s3_url'],
         'key': image_metadata['key'],
         'recorded_faces': []
     }
-
     album_store = AlbumStore(album_name)
     album_store.put_image(ret_value['key'], {
         'image_url': ret_value['image_url']
     })
-
     for record in resp['FaceRecords']:
       ret_value['recorded_faces'].append(self._normalize_face_attrs(record['Face']))
-
     return ret_value
 
 
@@ -51,16 +46,14 @@ class FaceIndex(object):
         Image={'Bytes': image_bytes},
         FaceMatchThreshold=_FACE_MATCH_THRESHOLD_
     )
-
     image_urls_map = {}
-
     for face_match in resp['FaceMatches']:
       face = self._normalize_face_attrs(face_match['Face'])
       image_url = self._storage.convert_key_to_s3_url(
           face_match['Face']['ExternalImageId']
       )
-
-      image_urls_map[image_url] = (image_url in 'image_urls_map' and image_urls_map[image_url]) or []
+      image_urls_map[image_url] = (
+          image_urls_map[image_url] if 'image_url' in image_urls_map else [])
       image_urls_map[image_url].append(face)
 
     retval = []

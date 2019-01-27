@@ -79,7 +79,6 @@ def _build_items_from_attribute_list(attrs_list):
     item = {'name': current['Name']}
     for attr in current['Attributes']:
       item[attr['Name']] = attr['Value']
-
     item_list.append(item)
   return item_list
 
@@ -91,7 +90,6 @@ def _list_items_helper(client, select_expr, next_token=None):
   }
   if next_token:
     kwargs['NextToken'] = next_token
-
   resp = client.select(**kwargs)
   return {
       'next_token': ('NextToken' in resp and resp['NextToken']) or None,

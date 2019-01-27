@@ -21,7 +21,6 @@ class FileStorage(object):
         Bucket=_S3_BUCKET_NAME_,
         Key=key
     )
-
     return {
         'key': key,
         's3_bucket': _S3_BUCKET_NAME_,
