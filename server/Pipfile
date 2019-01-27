@@ -1,0 +1,19 @@
+[[source]]
+verify_ssl = true
+url = "https://pypi.python.org/simple"
+name = "pypi"
+
+[dev-packages]
+pylint = "*"
+ipython = "*"
+
+[packages]
+falcon = "*"
+gunicorn = "*"
+msgpack = "*"
+pytest = "*"
+"boto3" = "*"
+python-slugify = "*"
+
+[requires]
+python_version = "3.6"
