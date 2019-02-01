@@ -13,6 +13,7 @@ class AlbumResource:
   def on_get(self, req, resp):
     """Returns a list of albums.
     """
+    # resp.media = dict(message='Hello world\n')
     limit = req.get_param_as_int('limit')
     next_token = req.get_param('next_token')
     resp.media = AlbumStore.list_albums(next_token, limit)
