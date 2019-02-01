@@ -30,7 +30,7 @@
     </div>
     <v-layout class="pt-2">
       <v-btn flat fab small class="pink darken-1 white--text"
-             :to="{name: 'album', params: {name: album.name}}">
+             :to="{name: 'album', params: {name: album.human_readable_name}}">
         <v-icon>add_a_photo</v-icon>
       </v-btn>
     </v-layout>

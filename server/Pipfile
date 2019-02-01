@@ -17,5 +17,8 @@ python-slugify = "*"
 falcon-cors = "*"
 eventlet = "*"
 
+[scripts]
+serve = "gunicorn --reload --timeout 100 --worker-class eventlet 'src.app:get_app()"
+
 [requires]
 python_version = "3.6"

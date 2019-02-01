@@ -2,8 +2,46 @@
   <div class="albums">
     <v-container class="">
       <div class="headline grey--text">MANAGE ALBUMS</div>
-      <v-layout row class="pt-4 pb-2">
-        <v-btn small flat class="pink lighten-1 small white--text">Create album</v-btn>
+
+      <v-layout row class="pt-4 pb-2" style="display: none;">
+        <v-dialog v-model="createAlbumDialog" persistent max-width="350px">
+          <v-btn slot="activator" small flat class="pink lighten-1 small white--text">Create album</v-btn>
+          <v-card>
+            <v-card-title>
+              <span class="headline">Create Album</span>
+            </v-card-title>
+            <v-card-text>
+              <v-container grid-list-md>
+                <v-layout wrap>
+                  <v-flex xs12>
+                    <v-text-field label="Album Name*" required v-model="createAlbumField"></v-text-field>
+                  </v-flex>
+                </v-layout>
+              </v-container>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-layout row justify-center>
+                <p v-if="createAlbumError" class="body-2">
+                  {{ createAlbumError }}
+                </p>
+                <v-progress-circular
+                  :size="40"
+                  :width="4"
+                  color="pink"
+                  indeterminate
+                  v-if="createAlbumLoading"
+                ></v-progress-circular>
+              </v-layout>
+              <div>
+                <v-btn v-if="!createAlbumLoading"
+                       color="blue darken-1" flat @click="createAlbumDialog = false">Close</v-btn>
+                <v-btn v-if="!createAlbumLoading"
+                       color="blue darken-1" flat @click="onCreateAlbum">Create</v-btn>
+              </div>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
       </v-layout>
 
       <v-layout row wrap fill-height class="pa-1 album">
@@ -56,7 +94,12 @@ export default {
       loading: false,
       error: '',
       albums: [],
-      nextToken: null
+      nextToken: null,
+
+      createAlbumDialog: false,
+      createAlbumError: '',
+      createAlbumField: '',
+      createAlbumLoading: false
     }
   },
 
@@ -77,8 +120,23 @@ export default {
         this.nextToken = resp.data.next_token
       } catch (err) {
         this.error = ERROR_TEXT
+        console.log(err, )
       }
       this.loading = false
+    },
+
+    async onCreateAlbum () {
+      const albumName = this.createAlbumField
+      console.log('albumname: ', albumName)
+      try {
+        await axios.post('/albums', {
+          album_name: albumName
+        })
+
+        this.fetchAlbums()
+      } catch (err) {
+        this.createAlbumError = 'Cannot create. Try again.'
+      }
     }
   },
 
