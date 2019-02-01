@@ -120,7 +120,7 @@ export default {
         this.nextToken = resp.data.next_token
       } catch (err) {
         this.error = ERROR_TEXT
-        console.log(err, )
+        console.log(err)
       }
       this.loading = false
     },
