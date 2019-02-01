@@ -15,6 +15,7 @@ pytest = "*"
 "boto3" = "*"
 python-slugify = "*"
 falcon-cors = "*"
+eventlet = "*"
 
 [requires]
 python_version = "3.6"
