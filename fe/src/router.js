@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Albums from './views/Albums.vue'
+import AlbumList from './views/AlbumList.vue'
+import Album from './views/Album.vue'
 import Home from './views/Home.vue'
 import SearchResults from './views/SearchResults.vue'
 
@@ -15,14 +16,19 @@ export default new Router({
       component: Home
     },
     {
-      path: '/admin/albums',
+      path: '/a/albums',
       name: 'albums',
-      component: Albums
+      component: AlbumList
     },
     {
       path: '/search',
       name: 'searh-results',
       component: SearchResults
+    },
+    {
+      path: '/a/albums/:name',
+      name: 'album',
+      component: Album
     }
   ]
 })
