@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "d3ee771720c9b97bbb8a6339edae2bfb7bd697ed52be42a1b3e0f10b470bb3bb"
+            "sha256": "240d51eed4dc33fa8ca3bd06adfb70628c46679edde34beb7c9f1e8fcb0523f0"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -60,6 +60,13 @@
             ],
             "index": "pypi",
             "version": "==1.4.1"
+        },
+        "falcon-cors": {
+            "hashes": [
+                "sha256:1788ec5c31b5a39240f7979a7c7170a33ea4952dc97e151858a82dcde1a9fe8a"
+            ],
+            "index": "pypi",
+            "version": "==1.1.7"
         },
         "gunicorn": {
             "hashes": [
@@ -298,11 +305,11 @@
         },
         "prompt-toolkit": {
             "hashes": [
-                "sha256:c1d6aff5252ab2ef391c2fe498ed8c088066f66bc64a8d5c095bbf795d9fec34",
-                "sha256:d4c47f79b635a0e70b84fdb97ebd9a274203706b1ee5ed44c10da62755cf3ec9",
-                "sha256:fd17048d8335c1e6d5ee403c3569953ba3eb8555d710bfc548faf0712666ea39"
+                "sha256:88002cc618cacfda8760c4539e76c3b3f148ecdb7035a3d422c7ecdc90c2a3ba",
+                "sha256:c6655a12e9b08edb8cf5aeab4815fd1e1bdea4ad73d3bbf269cf2e0c4eb75d5e",
+                "sha256:df5835fb8f417aa55e5cafadbaeb0cf630a1e824aad16989f9f0493e679ec010"
             ],
-            "version": "==2.0.7"
+            "version": "==2.0.8"
         },
         "ptyprocess": {
             "hashes": [

@@ -1,3 +1,4 @@
+from threading import Thread
 import json
 
 import falcon
@@ -12,8 +13,8 @@ class AlbumResource:
   def on_get(self, req, resp):
     """Returns a list of albums.
     """
-    next_token = req.get_param('next_token')
     limit = req.get_param_as_int('limit')
+    next_token = req.get_param('next_token')
     resp.media = AlbumStore.list_albums(next_token, limit)
 
   def on_post(self, req, resp):
@@ -48,13 +49,12 @@ class ImageListResource:
       if not chunk:
         break
       image_bytes += chunk
-    image_metadata = self._face_index.save_and_index(
-        album_name,
-        image_bytes,
-        req.content_type
-    )
-    resp.media = image_metadata
-    resp.status = falcon.HTTP_201
+    thread = Thread(target=self._face_index.save_and_index,
+                    args=(album_name, image_bytes, req.content_type,))
+    thread.start()
+
+    resp.media = {'success': 'pending', 'message': 'Image submitted for indexing.'}
+    resp.status = falcon.HTTP_200
 
 
 class ImageSearchResource:
