@@ -74,7 +74,6 @@ export default {
     async onImagePicked (e) {
       this.error = ''
       this.imageSearchResults = []
-
       this.searching = true
       this.doneSearch = false
       try {
