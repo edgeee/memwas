@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import AlbumList from './views/AlbumList.vue'
 import Album from './views/Album.vue'
 import Home from './views/Home.vue'
+import Splash from './views/Splash.vue'
 
 Vue.use(Router)
 
@@ -10,7 +11,7 @@ export default new Router({
   mode: 'history',
   routes: [
     {
-      path: '/',
+      path: '/search',
       name: 'home',
       component: Home
     },
@@ -23,6 +24,11 @@ export default new Router({
       path: '/a/albums/:name',
       name: 'album',
       component: Album
+    },
+    {
+      path: '/',
+      name: 'splash',
+      component: Splash
     }
   ]
 })
