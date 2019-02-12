@@ -1,7 +1,9 @@
 import Vue from 'vue'
-import './plugins/vuetify'
 import App from './App.vue'
 import router from './router'
+
+// Require the main sass manifest file
+require('./assets/sass/main.scss')
 
 Vue.config.productionTip = false
 
