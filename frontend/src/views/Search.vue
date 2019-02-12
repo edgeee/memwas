@@ -1,3 +1,3 @@
 <template>
-  <div>Search for album.</div>
+  <div></div>
 </template>
