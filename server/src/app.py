@@ -7,6 +7,7 @@ from .resources import AlbumResource, ImageListResource, ImageSearchResource
 def create_app():
   cors = CORS(allow_origins_list=[
       'http://127.0.0.1:8080',
+      'http://localhost:8080',
       'http://www.memwas.com',
       'http://memwas.com'
   ])
