@@ -1,7 +1,10 @@
+import uuid
 import boto3
 
 from .storage import FileStorage
 from .datastore import AlbumStore
+from .image_utils import generate_thumbnail, build_thumbnail_url, build_thumbnail_filename
+
 
 _COLLECTION_INDEX_NAME_ = 'memwas'
 _FACE_MATCH_THRESHOLD_ = 80
@@ -18,7 +21,14 @@ class FaceIndex(object):
     """
     if not self._image_has_faces(image_bytes):
       return None
-    image_metadata = self._storage.save(image_bytes, content_type)
+    filename = uuid.uuid4().hex
+    image_metadata = self._storage.save(image_bytes, content_type, filename)
+    self._storage.save(
+        generate_thumbnail(image_bytes),
+        content_type,
+        build_thumbnail_filename(filename)
+    )
+
     resp = self.client.index_faces(
         CollectionId=_COLLECTION_INDEX_NAME_,
         Image={'S3Object': {'Bucket': image_metadata['s3_bucket'], 'Name': image_metadata['key']}},
@@ -31,7 +41,8 @@ class FaceIndex(object):
     }
     album_store = AlbumStore(album_name)
     album_store.put_image(ret_value['key'], {
-        'image_url': ret_value['image_url']
+        'image_url': ret_value['image_url'],
+        'image_thumbnail_url': build_thumbnail_url(ret_value['image_url'])
     })
     for record in resp['FaceRecords']:
       ret_value['recorded_faces'].append(self._normalize_face_attrs(record['Face']))
@@ -58,7 +69,11 @@ class FaceIndex(object):
 
     retval = []
     for image_url, faces in image_urls_map.items():
-      retval.append({'image_url': image_url, 'matches': faces})
+      retval.append({
+        'image_url': image_url,
+        'matches': faces,
+        'image_thumbnail_url': build_thumbnail_url(image_url)
+      })
 
     return {
         'items': retval,

@@ -1,7 +1,8 @@
-from threading import Thread
 import json
+from threading import Thread
 
 import falcon
+import magic
 
 from .lib.datastore import AlbumStore
 from .lib.face_index import FaceIndex
@@ -51,7 +52,7 @@ class ImageListResource:
         break
       image_bytes += chunk
     thread = Thread(target=self._face_index.save_and_index,
-                    args=(album_name, image_bytes, req.content_type,))
+                    args=(album_name, image_bytes, magic.from_buffer(image_bytes) or req.content_type,))
     thread.start()
 
     resp.media = {'success': 'pending', 'message': 'Image submitted for indexing.'}

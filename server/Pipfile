@@ -16,6 +16,8 @@ pytest = "*"
 python-slugify = "*"
 falcon-cors = "*"
 eventlet = "*"
+pillow = "*"
+python-magic = "*"
 
 [scripts]
 serve = "gunicorn --reload --timeout 100 --worker-class eventlet 'src.app:get_app()'"

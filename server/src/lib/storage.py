@@ -11,10 +11,13 @@ class FileStorage(object):
   def __init__(self):
     self.client = boto3.client('s3')
 
-  def save(self, file_bytes, content_type):
+  def save(self, file_bytes, content_type, key=None):
     """Saves a file to storage and return metadata about the saved file.
     """
-    key = uuid.uuid4().hex + '{}'.format((mimetypes.guess_extension(content_type) or ''))
+    if not key:
+      key = uuid.uuid4().hex
+
+    key = key + '{}'.format((mimetypes.guess_extension(content_type) or ''))
     self.client.put_object(
         ACL='public-read',
         Body=file_bytes,

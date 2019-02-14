@@ -2,6 +2,8 @@ import datetime
 
 import boto3
 from slugify import slugify
+from .image_utils import build_thumbnail_url
+
 
 _DEFAULT_ITEMS_LIMIT = 20
 
@@ -35,7 +37,10 @@ class AlbumStore:
         self._album_name,
         limit
     )
-    return _list_items_helper(self.client, select_expr, next_token)
+    res = _list_items_helper(self.client, select_expr, next_token)
+    for item in res['items']:
+      item['image_thumbnail_url'] = build_thumbnail_url(item['image_url'])
+    return res
 
   @staticmethod
   def list_albums(next_token=None, limit=None):
