@@ -1,7 +1,7 @@
 import io
 from PIL import Image
 
-size = 64, 64 # 256, 256
+size = 256, 256
 THUMBNAIL_PREFIX_STR = 'thumbnail_'
 
 def generate_thumbnail(image_bytes):
