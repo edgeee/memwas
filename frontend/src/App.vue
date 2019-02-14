@@ -1,7 +1,11 @@
 <template>
   <div id="app">
     <navbar />
-    <router-view/>
+    <div class="has-background-white-ter">
+      <div class="container fluid m-t-lg p-t-lg p-b-xl">
+        <router-view/>
+      </div>
+    </div>
   </div>
 </template>
 

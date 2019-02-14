@@ -26,8 +26,4 @@
 .text-logo {
   letter-spacing: 0.2em;
 }
-
-text-spaced-sm {
-  letter-spacing: 0.5em;
-}
 </style>
