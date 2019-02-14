@@ -20,7 +20,7 @@ pillow = "*"
 python-magic = "*"
 
 [scripts]
-serve = "gunicorn --reload --timeout 100 --worker-class eventlet 'src.app:get_app()'"
+serve = "gunicorn --reload --timeout 100 --worker-class eventlet 'src.app:get_app()' --daemon"
 
 [requires]
 python_version = "3.6"
