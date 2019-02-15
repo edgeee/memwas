@@ -31,7 +31,7 @@
         No matching photos found.
       </p>
       <div class="m-t-md m-b-md" v-else-if="doneSearch">
-        <vue-picture-swipe :items="items" />
+        <photoswipe :items="items" />
       </div>
     </div>
   </section>
@@ -40,6 +40,7 @@
 <script>
 import { searchPhotos } from '../api'
 import Spinner from '../components/spinner.vue'
+import Photoswipe from '../components/photoswipe.vue'
 
 const ERROR_TEXT = 'An error occurred; try again.'
 
@@ -47,7 +48,8 @@ export default {
   name: 'search',
 
   components: {
-    Spinner
+    Spinner,
+    Photoswipe
   },
 
   data () {
@@ -69,14 +71,15 @@ export default {
         const photoFile = event.target.files[0]
         const res = await searchPhotos(photoFile)
         for (let item, i = 0; i < res.items.length; i++) {
-          item = { src: res.items[i].image_url }
-
+          item = {
+            src: res.items[i].image_url,
+            thumbnail: res.items[i].image_thumbnail_url
+          }
           const that = this
-          this.getImageProps(item.src, function (err, props) {
+          this.getImageDimensions(item.src, function (err, dimensions) {
             if (err) { /* pretend to handle error */ } else {
-              item.w = props.w
-              item.h = props.h
-              item.thumbnail = props.thumbnail
+              item.w = dimensions.w
+              item.h = dimensions.h
               that.items.push(item)
             }
           })
@@ -88,14 +91,13 @@ export default {
       this.doneSearch = true
     },
 
-    getImageProps (imageSrc, cb) {
+    getImageDimensions (imageSrc, cb) {
       const img = new Image()
       img.src = imageSrc
       img.onload = function () {
         cb(null, {
           w: this.width,
-          h: this.height,
-          thumbnail: imageSrc
+          h: this.height
         })
       }
     }

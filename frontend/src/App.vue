@@ -1,7 +1,7 @@
 <template>
   <div id="app">
-    <navbar />
-    <div class="has-background-white-ter">
+    <navbar v-if="showNavbar" />
+    <div :class="{'has-background-white-ter': showNavbar}">
       <div class="container fluid m-t-lg p-t-lg p-b-xl">
         <router-view/>
       </div>
@@ -16,6 +16,15 @@ export default {
   name: 'app',
   components: {
     Navbar
+  },
+
+  computed: {
+    showNavbar () {
+      return this.$route.path !== '/'
+    }
   }
 }
 </script>
+
+<style>
+</style>

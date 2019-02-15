@@ -1,5 +1,5 @@
 <template>
-  <section class="m-r-md">
+  <div class="m-r-md">
     <p class="is-size-4 has-text-weight-light" style="letter-spacing: 2px;">
       <span class="icon">
         <i class="far fa-image"></i>
@@ -30,10 +30,7 @@
         </div>
       </div>
     </section>
-
-    <div class="m-t-md m-b-md">
-      <vue-picture-swipe :items="items" />
-    </div>
+    <photoswipe :items="items"></photoswipe>
 
     <div v-if="ui.error">
       {{ ui.error }}
@@ -44,17 +41,18 @@
       No images in this album yet.
     </div>
 
-    <div v-else-if="!ui.loading" class="has-text-centered">
+    <div v-else-if="!ui.loading && canFetch" class="has-text-centered">
       <button class="button is-dark" @click="fetchAlbumPhotos">
         Load more...
       </button>
     </div>
-  </section>
+  </div>
 </template>
 
 <script>
 import { fetchPhotos, uploadPhoto } from '../api'
 import Spinner from '../components/spinner.vue'
+import Photoswipe from '../components/photoswipe'
 
 const ITEMS_PER_FETCH_OP = 20
 const ERROR_TEXT = 'An error occurred; try again.'
@@ -65,13 +63,15 @@ export default {
   name: 'album',
 
   components: {
-    Spinner
+    Spinner,
+    Photoswipe
   },
 
   data () {
     return {
       items: [],
       nextToken: null,
+      canFetch: false,
       ui: {
         loading: false,
         error: '',
@@ -92,17 +92,19 @@ export default {
           size: ITEMS_PER_FETCH_OP,
           albumName: this.$route.params.name
         })
-
+        this.canFetch = !!this.next_token
         this.nextToken = res.next_token
         for (let item, i = 0; i < res.items.length; i++) {
-          item = { src: res.items[i].image_url }
+          item = {
+            src: res.items[i].image_url,
+            thumbnail: res.items[i].image_thumbnail_url
+          }
 
           const that = this
-          this.getImageProps(item.src, function (err, props) {
+          this.getImageDimensions(item.src, function (err, props) {
             if (err) { /* pretend to handle error */ } else {
               item.w = props.w
               item.h = props.h
-              item.thumbnail = props.thumbnail
               that.items.push(item)
             }
           })
@@ -113,14 +115,13 @@ export default {
       this.ui.loading = false
     },
 
-    getImageProps (imageSrc, cb) {
+    getImageDimensions (imageSrc, cb) {
       const img = new Image()
       img.src = imageSrc
       img.onload = function () {
         cb(null, {
           w: this.width,
-          h: this.height,
-          thumbnail: imageSrc
+          h: this.height
         })
       }
     },
@@ -140,6 +141,7 @@ export default {
           const that = this
           setTimeout(function () {
             that.ui.uploadMessage = ''
+            that.fetchAlbumPhotos()
           }, 7000)
         } catch (err) {
           this.ui.uploadMessage = UPLOAD_ERROR_TEXT
@@ -149,6 +151,8 @@ export default {
           }, 7000)
         }
       }
+
+      this.ui.uploading = false
     }
   },
 

@@ -17,7 +17,9 @@
             :style="{flex: album.thumbnail.aspectRatio}"
             >
           <router-link :to="`/album/${album.name}`" class="is-dark">
-            <img :src="album.thumbnail.url" alt="Image thumbnail" class="block">
+            <img v-if="album.thumbnail.url"
+                 :src="album.thumbnail.url" alt="Image thumbnail" class="block">
+            <p v-else>No photos yet; Create?</p>
             <p class="m-t-sm">
               <span class="icon">
                 <i class="far fa-image"></i>

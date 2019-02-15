@@ -15,7 +15,7 @@ class AlbumStore:
   def __init__(self, album_name):
     self.client = boto3.client('sdb')
     self._album_name = album_name
-    self._ensure_exists()
+    # self._ensure_exists()
 
   def put_image(self, name, attributes):
     """Puts the given image metadata into this album.
@@ -61,6 +61,7 @@ class AlbumStore:
         'human_readable_name': self._album_name,
         'created_at': str(datetime.datetime.now())
     }
+    print(_build_attribute_list(attrs))
     self.client.put_attributes(
         DomainName=AlbumStore.ALBUM_STORE_NAME,
         ItemName=slugify(self._album_name),

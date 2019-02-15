@@ -10,6 +10,7 @@
   "dependencies": {
     "axios": "^0.18.0",
     "bulma": "^0.7.4",
+    "photoswipe": "^4.1.3",
     "vue": "^2.5.22",
     "vue-picture-swipe": "^1.0.0",
     "vue-router": "^3.0.1"
