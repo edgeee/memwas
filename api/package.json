@@ -1,0 +1,38 @@
+{
+  "name": "memwas-api",
+  "version": "1.0.0",
+  "description": "API server for the memwas photo gallery",
+  "main": "index.js",
+  "author": "rasheedmusa9@gmail.com",
+  "license": "MIT",
+  "private": true,
+  "devDependencies": {
+    "standard": "^12.0.1"
+  },
+  "scripts": {
+    "lint": "./node_modules/.bin/standard --fix",
+    "serve-dev": "NODE_ENV=development node ./index.js",
+    "serve-production": "NODE_ENV=production node ./index.js",
+    "install-gm": "chmod +x ./scripts/install-gm.sh && ./scripts/install-gm.sh",
+    "create-aws-artifacts": "chmod +x ./scripts/create-aws-artifacts.js && ./scripts/create-aws-artifacts.js",
+    "run-scripts-dev": "NODE_ENV=development yarn create-aws-artifacts"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.404.0",
+    "body-parser": "^1.18.3",
+    "busboy": "^0.3.0",
+    "dotenv": "^6.2.0",
+    "file-type": "^10.7.1",
+    "gm": "^1.23.1",
+    "image-size": "^0.7.2",
+    "mongoose": "^5.4.13",
+    "morgan": "^1.9.1",
+    "restify": "^7.7.0",
+    "restify-cors-middleware": "^1.1.1",
+    "restify-errors": "^6.1.1",
+    "restify-joi-middleware": "^5.0.1",
+    "uuid": "^3.3.2",
+    "uuid-to-hex": "^1.0.3",
+    "winston": "^3.2.1"
+  }
+}

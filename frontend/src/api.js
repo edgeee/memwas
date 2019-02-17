@@ -1,30 +1,28 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'http://api.memwas.com'
+  baseURL: 'http://localhost:5000',
+  timeout: 15000
 })
 
-export const listAlbums = ({ size, nextToken }) => {
-  const params = { limit: size }
-  if (nextToken) {
-    params.next_token = nextToken
-  }
+export const fetchAlbums = ({ limit, offset }) => {
+  const params = { limit, offset }
   return api.get('/albums', { params }).then((resp) => resp.data)
 }
 
-export const fetchPhotos = ({ albumName, size, nextToken }) => {
-  const params = { limit: size, album_name: albumName }
-  if (nextToken) {
-    params.next_token = nextToken
-  }
-  return api.get('/images', { params }).then((resp) => resp.data)
+export const fetchPhotos = ({ albumId, offset, limit }) => {
+  const params = { limit, offset, album_id: albumId }
+  return api.get('/photos', { params }).then((resp) => resp.data)
 }
 
-export const uploadPhoto = ({ photo, albumName }) => {
-  const params = { album_name: albumName }
-  return api.post('/images', photo, { params }).then((resp) => resp.data)
+export const uploadPhoto = ({ photo, albumId }) => {
+  const params = { album_id: albumId }
+  const headers = { 'Content-Type': 'application/octet-stream' }
+
+  return api.post('/photos', photo, { params, headers }).then((resp) => resp.data)
 }
 
 export const searchPhotos = (photoFile) => {
-  return api.post('/search', photoFile).then((resp) => resp.data)
+  const headers = { 'Content-Type': 'application/octet-stream' }
+  return api.post('/photos/search', photoFile, { headers }).then((resp) => resp.data)
 }

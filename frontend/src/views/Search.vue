@@ -1,9 +1,8 @@
 <template>
-  <section class="m-b-xxl m-t-lg">
+  <section class="m-b-xxl m-t-lg m-l-sm m-r-sm">
     <div class="has-text-centered ">
       <p class="is-size-4 has-text-weight-light" style="letter-spacing: 1px;">Search Photos</p>
       <p class="has-text-grey m-t-sm m-b-lg">Upload a photo of yourself, and get matching photos in our index.</p>
-
       <div class="field is-size-6">
         <div class="file is-centered is-danger">
           <label class="file-label is-small">
@@ -27,11 +26,11 @@
     <div class="m-t-lg m-b-md">
       <spinner class="has-text-centered" v-if="searching" />
       <p class="has-text-centered" v-else-if="error">{{ error }}</p>
-      <p class="has-text-centered" v-else-if="doneSearch && items.length == 0">
+      <p class="has-text-centered" v-else-if="searchCompleted && items.length == 0">
         No matching photos found.
       </p>
-      <div class="m-t-md m-b-md" v-else-if="doneSearch">
-        <photoswipe :items="items" />
+      <div class="m-t-xl m-b-md" v-else-if="searchCompleted">
+        <gallery :items="items" />
       </div>
     </div>
   </section>
@@ -40,22 +39,20 @@
 <script>
 import { searchPhotos } from '../api'
 import Spinner from '../components/spinner.vue'
-import Photoswipe from '../components/photoswipe.vue'
-
-const ERROR_TEXT = 'An error occurred; try again.'
+import Gallery from '../components/gallery.vue'
 
 export default {
   name: 'search',
 
   components: {
     Spinner,
-    Photoswipe
+    Gallery
   },
 
   data () {
     return {
       searching: false,
-      doneSearch: false,
+      searchCompleted: false,
       error: '',
       items: []
     }
@@ -66,40 +63,23 @@ export default {
       this.error = ''
       this.items = []
       this.searching = true
-      this.doneSearch = false
+      this.searchCompleted = false
       try {
         const photoFile = event.target.files[0]
         const res = await searchPhotos(photoFile)
-        for (let item, i = 0; i < res.items.length; i++) {
-          item = {
-            src: res.items[i].image_url,
-            thumbnail: res.items[i].image_thumbnail_url
-          }
-          const that = this
-          this.getImageDimensions(item.src, function (err, dimensions) {
-            if (err) { /* pretend to handle error */ } else {
-              item.w = dimensions.w
-              item.h = dimensions.h
-              that.items.push(item)
-            }
+        for (let i = 0; i < res.items.length; i++) {
+          this.items.push({
+            src: res.items[i].photo_url,
+            thumbnail: res.items[i].thumbnail_url,
+            w: res.items[i].photo_dimensions.w,
+            h: res.items[i].photo_dimensions.h
           })
         }
       } catch (err) {
-        this.error = ERROR_TEXT
+        this.error = err.message
       }
       this.searching = false
-      this.doneSearch = true
-    },
-
-    getImageDimensions (imageSrc, cb) {
-      const img = new Image()
-      img.src = imageSrc
-      img.onload = function () {
-        cb(null, {
-          w: this.width,
-          h: this.height
-        })
-      }
+      this.searchCompleted = true
     }
   }
 }

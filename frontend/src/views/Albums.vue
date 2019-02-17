@@ -7,36 +7,45 @@
       <span> ALBUMS</span>
     </p>
     <div class="m-t-xl">
-      <div v-if="ui.error" class="has-text-centered">
-        {{ ui.error }}
+      <div v-if="error" class="has-text-centered">
+        {{ error }}
       </div>
-      <div v-else-if="items.length > 0" class="columns flex is-multiline m-t-lg">
-          <div v-for="(album, index) in items"
-            :key="index"
-            class="column"
-            :style="{flex: album.thumbnail.aspectRatio}"
-            >
-          <router-link :to="`/album/${album.name}`" class="is-dark">
-            <img v-if="album.thumbnail.url"
-                 :src="album.thumbnail.url" alt="Image thumbnail" class="block">
-            <p v-else>No photos yet; Create?</p>
-            <p class="m-t-sm">
-              <span class="icon">
-                <i class="far fa-image"></i>
-              </span>
-              {{ album.name }}
-            </p>
+      <div v-else-if="items.length > 0" class="columns is-multiline m-t-lg">
+        <div v-for="(album, index) in filteredItems"
+          :key="index"
+          class="column is-one-quarter">
+          <router-link :to="`/album/${album.id}?name=${album.name}`" class="is-dark">
+            <img v-if="album.thumbnail_url"
+                 :src="album.thumbnail_url" alt="Image thumbnail"
+                 class="inline-block responsive-img">
+
+            <div class="is-size-3 has-text-centered" v-else
+                  style="padding-top: 45%; width: 256px; height: 256px;">
+            <span class="icon">
+              <i class="far fa-image"></i>
+            </span>
+            </div>
           </router-link>
+
+          <p class="m-t-md has-text-centered">
+            <span class="icon">
+              <i class="far fa-image"></i>
+            </span>
+            {{ album.name }}
+          </p>
         </div>
       </div>
-      <div v-else-if="!ui.loading">
+
+      <div v-else-if="!loading">
         <p class="has-text-centered">
           There are no existing albums.
         </p>
       </div>
-      <spinner v-if="ui.loading" />
-      <div v-else-if="nextToken" class="has-text-centered">
-        <button class="button is-dark" @click="fetchAlbumsAndThumbnails">
+
+      <spinner v-if="loading" />
+      <div v-else-if="hasItemsLeftToFetch" class="has-text-left">
+
+        <button class="button is-dark" @click="fetchAlbums">
           Load more...
         </button>
       </div>
@@ -45,11 +54,10 @@
 </template>
 
 <script>
-import { listAlbums, fetchPhotos } from '../api'
+import { fetchAlbums } from '../api'
 import Spinner from '../components/spinner.vue'
 
-const ITEMS_PER_FETCH_OP = 20
-const ERROR_TEXT = 'An error occurred; try again.'
+const ITEMS_PER_FETCH_OP = 10
 
 export default {
   name: 'albums',
@@ -59,65 +67,52 @@ export default {
 
   data () {
     return {
+      loading: false,
+      error: '',
       items: [],
-      nextToken: null,
-      ui: {
-        error: '',
-        loading: false
+      meta: {
+        limit: ITEMS_PER_FETCH_OP,
+        offset: 0,
+        total: 0
       }
     }
   },
 
-  methods: {
-    async fetchAlbumsAndThumbnails () {
-      this.ui.error = ''
-      this.ui.loading = true
-      try {
-        const res = await listAlbums({
-          size: ITEMS_PER_FETCH_OP,
-          nextToken: this.nextToken
-        })
-        this.nextToken = res.next_token
-        for (let album, i = 0; i < res.items.length; i++) {
-          album = {
-            name: res.items[i].human_readable_name,
-            thumbnail: { url: null, aspectRatio: 0 }
-          }
-
-          // Retrieves a single image in the current album, and uses it as the
-          // album's thumbnail.
-          const res2 = await fetchPhotos({
-            albumName: res.items[i].name,
-            size: 1,
-            nextToken: null
-          })
-          if (res2.items.length > 0) {
-            let that = this
-            const imageURL = res2.items[0].image_url
-
-            this.computeAspectRatio(imageURL, function (err, aspectRatio) {
-              if (err) { /* pretend to handle error */ } else {
-                album.thumbnail.url = imageURL
-                album.thumbnail.aspectRatio = aspectRatio
-                that.items.push(album)
-              }
-            })
-          } else {
-            this.items.push(album)
-          }
-        }
-      } catch (err) {
-        this.ui.error = ERROR_TEXT
-      }
-      this.ui.loading = false
+  computed: {
+    hasItemsLeftToFetch () {
+      return this.items.length < this.meta.total
     },
 
-    computeAspectRatio (imageURL, cb) {
-      const img = new Image()
-      img.src = imageURL
-      img.onload = function () {
-        cb(null, this.width / this.height)
+    filteredItems () {
+      return this.items.filter((item) => item.thumbnail_url || this.isAdmin)
+    },
+
+    isAdmin () {
+      return true
+    }
+  },
+
+  methods: {
+    shouldDisplayAlbum () {
+      return true
+    },
+
+    async fetchAlbumsAndThumbnails () {
+      this.error = ''
+      this.loading = true
+      try {
+        const res = await fetchAlbums({
+          offset: this.meta.offset,
+          limit: this.meta.limit
+        })
+        this.meta.limit = res.limit
+        this.meta.offset += res.limit
+        this.meta.total = res.total
+        this.items.push(...res.items)
+      } catch (err) {
+        this.error = err.message
       }
+      this.loading = false
     }
   },
 
@@ -128,12 +123,9 @@ export default {
 </script>
 
 <style scoped>
-img {
-  width: 100%;
+.responsive-img {
+  max-width: 100%;
   height: auto;
   vertical-align: middle;
 }
-</style>
-
-<style lang="scss" scoped>
 </style>

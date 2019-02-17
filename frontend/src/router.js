@@ -26,7 +26,7 @@ export default new Router({
       component: () => import('./views/Albums.vue')
     },
     {
-      path: '/album/:name',
+      path: '/album/:id',
       name: 'album',
       component: () => import('./views/Album.vue')
     }

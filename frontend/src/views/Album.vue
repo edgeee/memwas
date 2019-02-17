@@ -1,20 +1,30 @@
 <template>
-  <div class="m-r-md">
+  <div class="m-l-md m-r-md">
     <p class="is-size-4 has-text-weight-light" style="letter-spacing: 2px;">
       <span class="icon">
         <i class="far fa-image"></i>
       </span>
-      <span class="is-capitalized"> {{ $route.params.name }}</span>
+      <span class="is-capitalized"> {{ $route.query.name }}</span>
     </p>
 
     <section class="m-t-md m-b-xl">
-      <spinner v-if="ui.uploading" />
-      <p v-else-if="ui.uploadMessage">{{ ui.uploadMessage }}</p>
+      <div v-if="uploading">
+        <spinner />
+        <p>Uploaded {{ uploadCount }} of {{ uploadTotal }}</p>
+      </div>
+      <p v-else-if="uploadText">{{ uploadText }}</p>
+      <p v-else-if="uploadError">{{ uploadError }}</p>
+
       <div v-else class="field is-size-6">
         <div class="file is-danger">
           <label class="file-label is-small">
-            <input class="file-input is-small" type="file" name="resume" multiple
-                   @change="handlePhotosUpload">
+            <input class="file-input is-small"
+                   type="file"
+                   name="resume"
+                   accept="image/png,image/jpeg"
+                   multiple
+                   @change="doBulkUpload">
+
             <span class="file-cta">
               <span class="file-icon">
                 <i class="fas fa-image"></i>
@@ -30,18 +40,24 @@
         </div>
       </div>
     </section>
-    <photoswipe :items="items"></photoswipe>
 
-    <div v-if="ui.error">
-      {{ ui.error }}
+    <div class="m-t-sm m-b-sm">
+      <gallery :items="items" />
     </div>
-    <spinner v-else-if="ui.loading" />
+
+    <div v-if="error">
+      {{ error }}
+    </div>
+
+    <div class="m-t-xl" v-else-if="loading">
+      <spinner  />
+    </div>
 
     <div v-else-if="items.length === 0">
       No images in this album yet.
     </div>
 
-    <div v-else-if="!ui.loading && canFetch" class="has-text-centered">
+    <div v-else-if="hasItemsLeftToFetch" class="has-text-left m-t-xl">
       <button class="button is-dark" @click="fetchAlbumPhotos">
         Load more...
       </button>
@@ -52,107 +68,105 @@
 <script>
 import { fetchPhotos, uploadPhoto } from '../api'
 import Spinner from '../components/spinner.vue'
-import Photoswipe from '../components/photoswipe'
+import Gallery from '../components/gallery.vue'
 
-const ITEMS_PER_FETCH_OP = 20
-const ERROR_TEXT = 'An error occurred; try again.'
-const UPLOAD_SUCCESS_TEXT = 'Upload completed successfully.'
-const UPLOAD_ERROR_TEXT = 'Unable to upload some photos; try again.'
+const ITEMS_PER_FETCH_OP = 10
 
 export default {
   name: 'album',
 
   components: {
     Spinner,
-    Photoswipe
+    Gallery
   },
 
   data () {
     return {
+      loading: false,
+      error: '',
       items: [],
-      nextToken: null,
-      canFetch: false,
-      ui: {
-        loading: false,
-        error: '',
-        uploading: '',
-        uploadMessage: ''
-      }
+      meta: {
+        limit: ITEMS_PER_FETCH_OP,
+        offset: 0,
+        total: 0
+      },
+
+      uploadError: '',
+      uploadTotal: 0,
+      uploadCount: 0,
+      uploading: false,
+      uploadFailedItems: [],
+      uploadText: ''
+    }
+  },
+
+  computed: {
+    hasItemsLeftToFetch () {
+      return this.items.length < this.meta.total
     }
   },
 
   methods: {
     async fetchAlbumPhotos () {
-      this.ui.error = ''
-      this.ui.loading = true
-
+      this.error = ''
+      this.loading = true
       try {
         const res = await fetchPhotos({
-          nextToken: this.nextToken,
-          size: ITEMS_PER_FETCH_OP,
-          albumName: this.$route.params.name
+          offset: this.meta.offset,
+          limit: this.meta.limit,
+          albumId: this.$route.params.id
         })
-        this.canFetch = !!this.next_token
-        this.nextToken = res.next_token
-        for (let item, i = 0; i < res.items.length; i++) {
-          item = {
-            src: res.items[i].image_url,
-            thumbnail: res.items[i].image_thumbnail_url
-          }
 
-          const that = this
-          this.getImageDimensions(item.src, function (err, props) {
-            if (err) { /* pretend to handle error */ } else {
-              item.w = props.w
-              item.h = props.h
-              that.items.push(item)
-            }
+        this.meta.limit = res.limit
+        this.meta.offset += res.limit
+        this.meta.total = res.total
+        for (let i = 0; i < res.items.length; i++) {
+          this.items.push({
+            src: res.items[i].photo_url,
+            thumbnail: res.items[i].thumbnail_url,
+            w: res.items[i].photo_dimensions.w,
+            h: res.items[i].photo_dimensions.h
           })
         }
       } catch (err) {
-        this.ui.error = ERROR_TEXT
+        this.error = err.message
       }
-      this.ui.loading = false
+      this.loading = false
     },
 
-    getImageDimensions (imageSrc, cb) {
-      const img = new Image()
-      img.src = imageSrc
-      img.onload = function () {
-        cb(null, {
-          w: this.width,
-          h: this.height
+    async doBulkUpload (event) {
+      const files = event.target.files
+      const uploadFuncs = []
+
+      for (let i = 0; i < files.length; i++) {
+        uploadFuncs.push(async () => {
+          try {
+            await uploadPhoto({
+              photo: files.item(i),
+              albumId: this.$route.params.id
+            })
+            this.uploadCount += 1
+          } catch (err) {
+            this.uploadFailedItems.push(files.item(i))
+          }
         })
       }
-    },
 
-    async handlePhotosUpload (event) {
-      const photoList = event.target.files
-      this.ui.uploading = true
-      for (let i = 0; i < photoList.length; i++) {
-        const photo = photoList.item(i)
-        try {
-          await uploadPhoto({
-            photo,
-            albumName: this.$route.params.name
-          })
+      this.uploading = true
+      this.uploadTotal = files.length
+      this.uploadFailedItems = []
+      this.uploadCount = 0
+      await Promise.all(uploadFuncs.map(async fn => fn()))
 
-          this.ui.uploadMessage = UPLOAD_SUCCESS_TEXT
-          const that = this
-          setTimeout(function () {
-            that.ui.uploadMessage = ''
-            that.fetchAlbumPhotos()
-          }, 7000)
-        } catch (err) {
-          this.ui.uploadMessage = UPLOAD_ERROR_TEXT
-          const that = this
-          setTimeout(function () {
-            that.ui.uploadMessage = ''
-          }, 7000)
-        }
+      this.uploading = false
+      let uploadText = `Successully uploaded ${this.uploadCount} of ${this.uploadTotal} items.`
+      if (this.uploadFailedItems.length > 0) {
+        uploadText += ` ${this.uploadFailedItems.length} failed to upload.`
       }
-
-      this.ui.uploading = false
+      this.uploadText = uploadText
+      setTimeout(() => {
+        this.uploadText = ''
+      }, 5000)
     }
   },
 
