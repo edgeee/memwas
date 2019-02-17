@@ -12,10 +12,11 @@
   "scripts": {
     "lint": "./node_modules/.bin/standard --fix",
     "serve-dev": "NODE_ENV=development node ./index.js",
-    "serve-production": "NODE_ENV=production node ./index.js",
+    "serve-production": "NODE_ENV=production pm2 start ./index.js --name memwas-api",
     "install-gm": "chmod +x ./scripts/install-gm.sh && ./scripts/install-gm.sh",
     "create-aws-artifacts": "chmod +x ./scripts/create-aws-artifacts.js && ./scripts/create-aws-artifacts.js",
-    "run-scripts-dev": "NODE_ENV=development yarn create-aws-artifacts"
+    "run-scripts-dev": "NODE_ENV=development yarn create-aws-artifacts",
+    "run-scripts-production": "NODE_ENV=production yarn create-aws-artifacts"
   },
   "dependencies": {
     "aws-sdk": "^2.404.0",
